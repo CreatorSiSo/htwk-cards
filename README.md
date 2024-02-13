@@ -1,17 +1,28 @@
 # Htwk Cards
 
-## Ideen
+## Personen
 
-- Prof. Schwarz
+### Professoren
+
+- Prof. Dr. rer. nat. Sybille Schwarz
   - ominös
   - kocht Formeln
-- Grutmüller
-- Hlawi
-- Wagner
+- Prof. Dr. rer. nat. habil. Martin Grüttmüller
+- Prof. Dr. rer. nat. Mario Hlawitschka
+  - Hlawi
+- Prof. Dr. rer. nat. Jens Wagner
 
-- Benjamin (Schmidt)
+### Dozenten
+
+- Dipl.-Math. Benjamin Schmidt
   - Episch
-- Höppner
+- M. Sc. Tobias Höppner
   - Megaphon (ist laut)
   - EMP (konfisziert alle Handys)
-- Master? Ulbricht
+- M. Eng. Marian Ulbricht
+- Dipl.-Math. Dörte König
+
+## Website
+
+- Möglichkeit neue Ideen vorzuschlagen
+- Liste aller Karten
