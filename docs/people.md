@@ -20,3 +20,4 @@
   - EMP (konfisziert alle Handys)
 - M. Eng. Marian Ulbricht
 - Dipl.-Math. Dörte König
+- Stolze der Ghost
