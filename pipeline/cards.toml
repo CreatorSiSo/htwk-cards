@@ -1,0 +1,15 @@
+people = [
+    { nickname = "Schwarz", name = "Sybille Schwarz", titles = "Prof. Dr. rer. nat.", job = "prof" },
+    { nickname = "Grütti", name = "Martin Grüttmüller", titles = "Prof. Dr. rer. nat. habil.", job = "prof" },
+    { nickname = "Hlawi", name = "Mario Hlawitschka", titles = "Prof. Dr. rer. nat.", job = "prof" },
+    { nickname = "Wagner", name = "Jens Wagner", titles = "Prof. Dr. rer. nat.", job = "prof" },
+
+    { nickname = "Benjamin", name = "Benjamin Schmidt", titles = "Dipl.-Math.", job = "doz" },
+    { nickname = "Höppner", name = "Tobias Höppner", titles = "M. Sc.", job = "doz" },
+    { nickname = "Ulbricht", name = "Marian Ulbricht", titles = "M. Eng.", job = "doz" },
+    { nickname = "Stolze", name = "____ Stolze", titles = "¯\\_(ツ)_/¯", job = "doz" },
+]
+
+places = [{ name = "Mensa" }, { name = "CC Raum" }]
+
+events = []
