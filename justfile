@@ -1,5 +1,5 @@
 website_out := "dist"
-typst_out := "website/public/cards"
+typst_out := "website/assets/"
 
 clean:
     rm -rf {{website_out}}/*
@@ -24,11 +24,13 @@ typst-build:
     typst compile pipeline/locale_en.typ  {{typst_out}}/cards_en.pdf &&
     typst compile pipeline/locale_de.typ  {{typst_out}}/cards_de.pdf &&
     typst compile pipeline/locale_en.typ  {{typst_out}}/card_en_{n}.svg &&
-    typst compile pipeline/locale_de.typ  {{typst_out}}/card_de_{n}.svg
+    typst compile pipeline/locale_de.typ  {{typst_out}}/card_de_{n}.svg &&
+    typst compile pipeline/locale_en.typ  {{typst_out}}/card_en_{n}.png --ppi 400 &&
+    typst compile pipeline/locale_de.typ  {{typst_out}}/card_de_{n}.png --ppi 400
 
 typst-dev:
     #!/usr/bin/bash
     typst watch pipeline/locale_en.typ  {{typst_out}}/cards_en.pdf &
     &>/dev/null typst watch pipeline/locale_de.typ  {{typst_out}}/cards_de.pdf &
-    &>/dev/null typst watch pipeline/locale_en.typ  {{typst_out}}/card_en_{n}.svg &
-    &>/dev/null typst watch pipeline/locale_de.typ  {{typst_out}}/card_de_{n}.svg
+    &>/dev/null typst watch pipeline/locale_en.typ  {{typst_out}}/card_en_{n}.png --ppi 500 &
+    &>/dev/null typst watch pipeline/locale_de.typ  {{typst_out}}/card_de_{n}.png --ppi 500

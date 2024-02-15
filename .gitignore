@@ -1,6 +1,6 @@
 # build output
 dist/
-website/public/cards/
+website/assets
 
 # generated types
 .astro/
