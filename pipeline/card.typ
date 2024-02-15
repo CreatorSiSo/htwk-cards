@@ -1,16 +1,20 @@
 #let text-primary = rgb("#ede0ce")
 #let bg-primary = blue.darken(70%).desaturate(35%)
-#let text-secondary = text-primary.mix(bg-primary.lighten(40%))
+#let text-secondary = rgb(..text-primary.components(alpha: false), 70%)
 
-#set page(
-  width: 6cm,
-  height: 9.5cm,
-  margin: (x: 0mm, y: 0mm),
-  fill: bg-primary,
-)
-#set text(font: ("Roboto Slab"), size: 7pt, fill: text-secondary)
+#let card(person, locale: none) = {
+  if locale == none {
+    panic("Missing locale")
+  }
 
-#let card(person) = {
+  set page(
+    width: 6cm,
+    height: 9.5cm,
+    margin: (x: 0mm, y: 0mm),
+    fill: bg-primary,
+  )
+  set text( size: 7pt, fill: text-secondary)
+
   box(
     width: 100%,
     height: 50%,
@@ -23,7 +27,7 @@
         (rgb("#f1e3cf"), 100%),
       )
       let bg-colors = (
-        (bg-primary.darken(30%), 0%),
+        (bg-primary.darken(20%), 0%),
         (black, 100%),
       )
       polygon(
@@ -47,9 +51,9 @@
       text(size: 12pt, weight: 500, fill: text-primary, person.nickname)
       linebreak()
       [#person.titles #person.name]
+      stack(
+        spacing: 3mm,
+      )
     }
   )
 }
-
-#let config = toml("./cards.toml")
-#config.at("people").map(card).join(pagebreak())
