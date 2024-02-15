@@ -1,0 +1,73 @@
+{
+	"people": [
+		{
+			"nickname": "Schwarz",
+			"name": "Sybille Schwarz",
+			"titles": "Prof. Dr. rer. nat.",
+			"job": "prof",
+			"en": {},
+			"de": {}
+		},
+		{
+			"nickname": "Grütti",
+			"name": "Martin Grüttmüller",
+			"titles": "Prof. Dr. rer. nat. habil.",
+			"job": "prof",
+			"en": {},
+			"de": {}
+		},
+		{
+			"nickname": "Hlawi",
+			"name": "Mario Hlawitschka",
+			"titles": "Prof. Dr. rer. nat.",
+			"job": "prof",
+			"en": {},
+			"de": {}
+		},
+		{
+			"nickname": "Wagner",
+			"name": "Jens Wagner",
+			"titles": "Prof. Dr. rer. nat.",
+			"job": "prof",
+			"en": {},
+			"de": {}
+		},
+
+		{
+			"nickname": "Benjamin",
+			"name": "Benjamin Schmidt",
+			"titles": "Dipl.-Math.",
+			"job": "doz",
+			"en": {},
+			"de": {}
+		},
+		{
+			"nickname": "Höppner",
+			"name": "Tobias Höppner",
+			"titles": "M. Sc.",
+			"job": "doz",
+			"en": {},
+			"de": {}
+		},
+		{
+			"nickname": "Ulbricht",
+			"name": "Marian Ulbricht",
+			"titles": "M. Eng.",
+			"job": "doz",
+			"en": {},
+			"de": {}
+		},
+		{
+			"nickname": "Stolze",
+			"name": "____ Stolze",
+			"titles": "¯\\_(ツ)_/¯",
+			"job": "doz",
+			"en": {},
+			"de": {}
+		}
+	],
+
+	"places": [{ "nickname": "Mensa" }, { "nickname": "CC Raum" }],
+
+	"events": []
+}
