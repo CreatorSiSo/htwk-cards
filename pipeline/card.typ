@@ -48,11 +48,26 @@
     x: 3mm,
     top: -3mm,
     {
-      text(size: 12pt, weight: 500, fill: text-primary, person.nickname)
-      linebreak()
-      [#person.titles #person.name]
+      set par(justify: true)
+      set text(size: 6.5pt)
       stack(
         spacing: 3mm,
+        par[
+          #text(size: 12pt, weight: 500, fill: text-primary, person.nickname) \
+          #person.titles #person.name
+        ],
+        par[
+          #text(size: 9pt, fill: text-primary)[Description] \
+          Id nulla ullamco officia tempor officia Lorem in duis exercitation sint nostrud excepteur sint nostrud. Minim nisi et id culpa dolore do et.
+        ],
+        par[
+          #text(size: 9pt, fill: text-primary)[Ability Title] \
+          Id nulla ullamco officia tempor Lorem in duis exercitation sint nostrud excepteur sint nostrud dolore do et.
+        ],
+        par[
+          #text(size: 9pt, fill: text-primary)[Ability Title] \
+          Id nulla ullamco officia tempor Lorem in duis exercitation sint nostrud excepteur sint nostrud dolore do et.
+        ],
       )
     }
   )
