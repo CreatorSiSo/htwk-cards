@@ -1,0 +1,11 @@
+{
+	"name": "htwk-cards",
+	"type": "module",
+	"private": true,
+	"dependencies": {
+		"astro": "^4.4.0"
+	},
+	"engines": {
+		"node": "20"
+	}
+}

@@ -2,7 +2,6 @@
 
 See docs and ideas in the `docs/` folder.
 
-## Website
+## Development
 
-- Möglichkeit neue Ideen vorzuschlagen
-- Liste aller Karten
+**TODO**

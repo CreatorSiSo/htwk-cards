@@ -1,4 +1,4 @@
-#let text-primary = rgb("#ede0ce")
+#let text-primary = rgb("#ede0ce").saturate(10%)
 #let bg-primary = blue.darken(70%).desaturate(35%)
 #let text-secondary = rgb(..text-primary.components(alpha: false), 70%)
 
@@ -57,15 +57,15 @@
           #person.titles #person.name
         ],
         par[
-          #text(size: 9pt, fill: text-primary)[Description] \
+          #text(size: 8pt, fill: text-primary)[Description] \
           Id nulla ullamco officia tempor officia Lorem in duis exercitation sint nostrud excepteur sint nostrud. Minim nisi et id culpa dolore do et.
         ],
         par[
-          #text(size: 9pt, fill: text-primary)[Ability Title] \
+          #text(size: 8pt, fill: text-primary)[Ability Title] \
           Id nulla ullamco officia tempor Lorem in duis exercitation sint nostrud excepteur sint nostrud dolore do et.
         ],
         par[
-          #text(size: 9pt, fill: text-primary)[Ability Title] \
+          #text(size: 8pt, fill: text-primary)[Ability Title] \
           Id nulla ullamco officia tempor Lorem in duis exercitation sint nostrud excepteur sint nostrud dolore do et.
         ],
       )
