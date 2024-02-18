@@ -1,7 +1,7 @@
 ---
 import Page from "../template/Page.astro";
+import Card from "../components/Card.astro";
 import type { ImageMetadata } from "astro";
-import { Image } from "astro:assets";
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
 	"../assets/card_en_*.svg"
@@ -10,155 +10,97 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 
 <Page lang="en" title="HTWK Cards" class="bg-zinc-900 text-white flex flex-col">
 	<nav
-		class="flex p-4 w-full bg-zinc-800 text-[#ede0ce] border-b-2 border-current"
+		class="flex p-4 w-full bg-zinc-800 text-[#ede0ce] border-b-2 border-current sticky top-0 z-50"
 	>
 		<h1 class="text-xl font-semibold">HTWK Cards</h1>
 	</nav>
 
-	<main class="relative flex flex-col items-center gap-10">
+	<main class="flex flex-col items-center gap-10">
 		<section
 			id="cards-section"
 			class="relative flex flex-wrap justify-center gap-10 px-10 max-w-7xl mt-10"
 		>
-			{
-				Object.values(images).map((image) => (
-					<div class="group">
-						<Image
-							width={600}
-							height={900}
-							src={image()}
-							alt=""
-							format="webp"
-							class="card min-w-80 max-w-80 shadow-lg group-hover:shadow-xl shadow-black/20 group-hover:shadow-black/45"
-						/>
-					</div>
-				))
-			}
+			{Object.values(images).map((image) => <Card image={image} />)}
 		</section>
 
 		<div
 			id="backdrop"
-			class="absolute inset-0 transition backdrop-blur-sm backdrop-brightness-75 backdrop-saturate-50 opacity-0 pointer-events-none"
+			class="fixed w-full h-full transition ease-out opacity-0 backdrop-blur-sm backdrop-brightness-75 backdrop-saturate-50 flex justify-between items-center"
 		>
+			<button class="self-stretch p-6 bg-red-600 collapse sm:visible">
+				Prev
+			</button>
+
+			<Card image={Object.values(images)[0]} class="" />
+
+			<button class="self-stretch p-6 bg-red-600 collapse sm:visible">
+				Next
+			</button>
 		</div>
 	</main>
 </Page>
 
-<style>
-	#cards-section > .group {
-		perspective: 15cm;
-	}
-
-	#cards-section > .group,
-	#cards-section > .group > .card {
-		transition-property: transform color;
-		transition-duration: 0.5s;
-		transition-timing-function: ease-out;
-	}
-</style>
-
 <script>
-	import { debounce, throttle } from "../common.ts";
+	import { throttle } from "../common.ts";
 	import { createEffect, createSignal } from "solid-js";
 
-	const containers = document.querySelectorAll("#cards-section > .group");
+	const containers = document.querySelectorAll("#cards-section > div");
 	const cards = Array.from(containers).map((container: HTMLElement, index) => {
-		const [rotation, set_rotation] = createSignal({ x: 0.0, y: 0.0 });
-		const [scale, set_scale] = createSignal(1.0);
 		return {
 			index,
 			container,
-			image: container.querySelector(".card") as HTMLElement,
-			rotation,
-			set_rotation,
-			scale,
-			set_scale,
 		};
 	});
 
+	const selection = cards.map(() => createSignal(false));
+
 	const backdrop = document.querySelector("#backdrop") as HTMLElement;
-	const [selection, set_selection] = createSignal({
-		selected: false,
-		index: 0,
+	backdrop.addEventListener("mousedown", () => {
+		for (const [_, set_selected] of selection) {
+			set_selected(false);
+		}
 	});
+	const backdrop_card = backdrop.children[1] as HTMLElement;
+	const backdrop_image = backdrop_card.firstElementChild as HTMLImageElement;
 
-	createEffect<number>((prev_index) => {
-		const container = cards[prev_index].container;
-		container.style.transform = `translate(0px, 0px)`;
-		container.style.zIndex = "0";
+	for (const { index, container } of cards) {
+		const [selected, set_selected] = selection[index];
 
-		if (selection().selected) {
-			const container = cards[selection().index].container;
-			const rect = container.getClientRects()[0];
-			const x =
-				window.screenX - rect.x - rect.width / 2 + window.innerWidth / 2;
-			const y =
-				window.screenY - rect.y - rect.height / 2 + window.innerHeight / 2;
-			container.style.transform = `translate(${x}px, ${y}px)`;
-			container.style.zIndex = "100";
+		createEffect(() => {
+			if (!selected()) {
+				document.body.style.overflow = "visible";
+				backdrop.classList.add("opacity-0");
+				backdrop.classList.add("pointer-events-none");
+				container.style.zIndex = "0";
+				backdrop_card.style.transform = "scale(1.0)";
+				backdrop_card.style.transition = "";
+				return;
+			}
+
+			backdrop_image.src = container.firstElementChild.src;
+
+			const card_bounds = container.getBoundingClientRect();
+			const backdrop_card_bounds = backdrop_card.getBoundingClientRect();
+			const x = card_bounds.x - backdrop_card_bounds.x;
+			const y = card_bounds.y - backdrop_card_bounds.y;
+			backdrop_card.style.transform = `translate(${x}px, ${y}px)`;
+			requestAnimationFrame(() => {
+				backdrop_card.style.transition = "transform 400ms ease-out";
+				backdrop_card.style.transform = "translate(0px, 0px) scale(1.25)";
+			});
 
 			document.body.style.overflow = "hidden";
 			backdrop.classList.remove("opacity-0");
 			backdrop.classList.remove("pointer-events-none");
-		} else {
-			document.body.style.overflow = "visible";
-			backdrop.classList.add("opacity-0");
-			backdrop.classList.add("pointer-events-none");
-		}
+		});
 
-		return selection().index;
-	}, 0);
-
-	backdrop.addEventListener("mousedown", () =>
-		set_selection(({ index }) => ({
-			selected: false,
-			index,
-		}))
-	);
-
-	for (const card of cards) {
-		card.container.addEventListener("mouseenter", () => card.set_scale(1.05));
-		card.container.addEventListener(
-			"mouseleave",
-			debounce(() => {
-				card.set_rotation({ x: 0.0, y: 0.0 });
-				card.set_scale(1.0);
-			}, 100)
-		);
-
-		card.container.addEventListener(
-			"mousemove",
-			throttle((event: MouseEvent) => {
-				const bounds = card.container.getBoundingClientRect();
-				const in_bounds_x = event.clientX - bounds.left;
-				const in_bounds_y = event.clientY - bounds.top;
-				const normalized_x = in_bounds_x / bounds.width - 0.5;
-				const normalized_y = in_bounds_y / bounds.height - 0.5;
-
-				const length = Math.min(Math.hypot(normalized_x, normalized_y), 0.3);
-				const angle = Math.atan2(normalized_y, normalized_x);
-
-				const factor = 15;
-				card.set_rotation({
-					x: length * Math.sin(angle) * -factor,
-					y: length * Math.cos(angle) * factor,
-				});
-			}, 50)
-		);
-
-		card.container.addEventListener(
+		container.addEventListener(
 			"mousedown",
 			throttle(() => {
-				if (!selection().selected) {
-					set_selection({ selected: true, index: card.index });
+				if (!selected()) {
+					set_selected(true);
 				}
 			}, 200)
 		);
-
-		createEffect(() => {
-			card.image.style.transform =
-				`rotateX(${card.rotation().x}deg)  rotateY(${card.rotation().y}deg)` +
-				` scale(${card.scale()})`;
-		});
 	}
 </script>

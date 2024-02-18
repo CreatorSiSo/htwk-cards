@@ -1,0 +1,84 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+	image: () => Promise<{ default: ImageMetadata }>;
+	class?: string;
+}
+const { image, class: class_ext } = Astro.props;
+---
+
+<div class={`card-container group ${class_ext ?? ""}`}>
+	<Image
+		width={600}
+		height={900}
+		src={image()}
+		alt=""
+		format="webp"
+		class="card-image min-w-80 max-w-80 shadow-lg group-hover:shadow-xl shadow-black/20 group-hover:shadow-black/45"
+	/>
+</div>
+
+<style>
+	.card-container {
+		perspective: 15cm;
+	}
+
+	.card-image {
+		transition: transform color;
+		transition-duration: 0.4s;
+		transition-timing-function: ease-out;
+	}
+</style>
+
+<script>
+	import { debounce, throttle } from "../common.ts";
+	import { createEffect, createSignal } from "solid-js";
+
+	const containers = document.querySelectorAll(".card-container");
+	const cards = Array.from(containers).map((container: HTMLElement) => ({
+		container,
+		image: container.querySelector(".card-image") as HTMLElement,
+	}));
+
+	for (const { container, image } of cards) {
+		const [rotation, set_rotation] = createSignal({ x: 0.0, y: 0.0 });
+		const [scale, set_scale] = createSignal(1.0);
+
+		container.addEventListener("mouseenter", () => set_scale(1.05));
+		container.addEventListener(
+			"mouseleave",
+			debounce(() => {
+				set_rotation({ x: 0.0, y: 0.0 });
+				set_scale(1.0);
+			}, 100)
+		);
+
+		container.addEventListener(
+			"mousemove",
+			throttle((event: MouseEvent) => {
+				const bounds = container.getBoundingClientRect();
+				const in_bounds_x = event.clientX - bounds.left;
+				const in_bounds_y = event.clientY - bounds.top;
+				const normalized_x = in_bounds_x / bounds.width - 0.5;
+				const normalized_y = in_bounds_y / bounds.height - 0.5;
+
+				const length = Math.min(Math.hypot(normalized_x, normalized_y), 0.3);
+				const angle = Math.atan2(normalized_y, normalized_x);
+
+				const factor = 15;
+				set_rotation({
+					x: length * Math.sin(angle) * -factor,
+					y: length * Math.cos(angle) * factor,
+				});
+			}, 50)
+		);
+
+		createEffect(() => {
+			image.style.transform =
+				`rotateX(${rotation().x}deg)  rotateY(${rotation().y}deg)` +
+				` scale(${scale()})`;
+		});
+	}
+</script>
