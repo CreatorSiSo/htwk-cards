@@ -11,13 +11,13 @@ build:
     just clean && just typst-build && just astro-build
 
 astro-preview:
-    npx astro preview
+    npx astro preview --host
 
 astro-build:
     npx astro build
 
 astro-dev:
-    npx astro dev
+    npx astro dev --host
 
 typst-build:
     #!/usr/bin/bash

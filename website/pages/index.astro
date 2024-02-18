@@ -21,7 +21,7 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 
 	<section
 		id="cards-section"
-		class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+		class="flex flex-wrap justify-center gap-10 px-10 max-w-7xl"
 	>
 		{
 			Object.values(images).map((image) => (
@@ -32,7 +32,7 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 						src={image()}
 						alt=""
 						format="webp"
-						class="card min-w-72 max-w-72 shadow-lg group-hover:shadow-black/25 z-0"
+						class="card min-w-80 max-w-80 shadow-lg group-hover:shadow-xl shadow-black/20 group-hover:shadow-black/45"
 					/>
 				</div>
 			))
@@ -43,11 +43,11 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 <style>
 	#cards-section > .group {
 		perspective: 15cm;
-		/* transform-style: preserve-3d; */
 	}
 
+	#cards-section > .group,
 	#cards-section > .group > .card {
-		transition-property: transform;
+		transition-property: transform color;
 		transition-duration: 0.6s;
 		transition-timing-function: ease-out;
 	}
@@ -59,17 +59,51 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 		return (...args: any[]) => {
 			clearTimeout(timer);
 			timer = setTimeout(() => {
-				func.apply(this, args);
+				func.apply(null, args);
 			}, timeout);
 		};
 	}
 
-	const containers = document.querySelectorAll("#cards-section > .group");
-	for (const container of containers as NodeListOf<HTMLElement>) {
-		const card = container.querySelector(".card") as HTMLElement;
+	function throttle(func: (...args: any[]) => any, timeout: number) {
+		let waiting = false;
+		return (...args: any[]) => {
+			if (!waiting) {
+				func.apply(null, args);
+				setTimeout(() => (waiting = false), timeout);
+				waiting = true;
+			}
+		};
+	}
 
+	const cards = Array.from(
+		document.querySelectorAll("#cards-section > .group")
+	).map((container: HTMLElement, index) => {
+		return {
+			index,
+			container,
+			image: container.querySelector(".card") as HTMLElement,
+			selected: false,
+			transform: {
+				translation_x: 0.0,
+				translation_y: 0.0,
+				rotation_y: 0.0,
+				rotation_x: 0.0,
+				scale: 1.0,
+			},
+		};
+	});
+	type Card = (typeof cards)[0];
+
+	function applyTransform(card: Card) {
+		card.container.style.transform = `translate(${card.transform.translation_x}px, ${card.transform.translation_y}px)`;
+		card.image.style.transform =
+			`rotateX(${card.transform.rotation_x}deg)  rotateY(${card.transform.rotation_y}deg)` +
+			` scale(${card.transform.scale})`;
+	}
+
+	for (const card of cards) {
 		function onMouseMove(event: MouseEvent) {
-			const bounds = container.getBoundingClientRect();
+			const bounds = card.container.getBoundingClientRect();
 			const in_bounds_x = event.clientX - bounds.left;
 			const in_bounds_y = event.clientY - bounds.top;
 			const normalized_x = in_bounds_x / bounds.width - 0.5;
@@ -79,16 +113,60 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 			const angle = Math.atan2(normalized_y, normalized_x);
 
 			const factor = 15;
-			const rotate_x = length * Math.sin(angle) * -factor;
-			const rotate_y = length * Math.cos(angle) * factor;
+			card.transform.rotation_x = length * Math.sin(angle) * -factor;
+			card.transform.rotation_y = length * Math.cos(angle) * factor;
+			card.transform.scale = 1.05;
 
-			card.style.transform = `scale(1.05) rotateY(${rotate_y}deg) rotateX(${rotate_x}deg)`;
+			applyTransform(card);
 		}
 
-		container.addEventListener("mousemove", onMouseMove);
-		container.addEventListener(
+		card.container.addEventListener("mousemove", throttle(onMouseMove, 50));
+		card.container.addEventListener(
 			"mouseleave",
-			debounce(() => (card.style.transform = "scale(1.0)"), 100)
+			debounce(() => {
+				card.transform.rotation_x = 0.0;
+				card.transform.rotation_y = 0.0;
+				card.transform.scale = 1.0;
+				applyTransform(card);
+			}, 100)
+		);
+
+		card.container.addEventListener(
+			"mousedown",
+			throttle(() => {
+				const rect = card.container.getClientRects()[0];
+
+				function deselectCard(card: Card) {
+					console.log(card);
+					card.selected = false;
+					card.transform.translation_x = 0;
+					card.transform.translation_y = 0;
+					applyTransform(card);
+				}
+
+				if (!card.selected) {
+					const selected_card = cards.find((card) => card.selected);
+					if (selected_card) {
+						deselectCard(selected_card);
+					}
+
+					card.selected = true;
+					card.transform.translation_x =
+						window.screenX -
+						rect.x -
+						rect.width / 2 +
+						window.screen.availWidth / 2;
+					card.transform.translation_y =
+						window.screenY -
+						rect.y -
+						rect.height / 2 +
+						window.screen.availHeight / 2;
+					applyTransform(card);
+					return;
+				}
+
+				deselectCard(card);
+			}, 200)
 		);
 	}
 </script>
