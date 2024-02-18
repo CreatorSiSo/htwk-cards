@@ -3,23 +3,92 @@ import Page from "../template/Page.astro";
 import type { ImageMetadata } from "astro";
 import { Image } from "astro:assets";
 
-const images = import.meta.glob<{ default: ImageMetadata }>("../assets/*.png");
+const images = import.meta.glob<{ default: ImageMetadata }>(
+	"../assets/card_en_*.svg"
+);
 ---
 
-<Page lang="en" title="HTWK Cards">
-	<nav class="flex"><h1>HTWK Cards</h1></nav>
-	<div class="flex flex-wrap gap-2">
+<Page
+	lang="en"
+	title="HTWK Cards"
+	class="bg-zinc-900 text-white flex flex-col items-center gap-10"
+>
+	<nav
+		class="flex p-4 w-full bg-zinc-800 text-[#ede0ce] border-b-2 border-current"
+	>
+		<h1 class="text-xl font-semibold">HTWK Cards</h1>
+	</nav>
+
+	<section
+		id="cards-section"
+		class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+	>
 		{
 			Object.values(images).map((image) => (
-				<Image
-					width={600}
-					height={900}
-					src={image()}
-					alt=""
-					format="webp"
-					class="w-80"
-				/>
+				<div class="group">
+					<Image
+						width={600}
+						height={900}
+						src={image()}
+						alt=""
+						format="webp"
+						class="card min-w-72 max-w-72 shadow-lg group-hover:shadow-black/25 z-0"
+					/>
+				</div>
 			))
 		}
-	</div>
+	</section>
 </Page>
+
+<style>
+	#cards-section > .group {
+		perspective: 15cm;
+		/* transform-style: preserve-3d; */
+	}
+
+	#cards-section > .group > .card {
+		transition-property: transform;
+		transition-duration: 0.6s;
+		transition-timing-function: ease-out;
+	}
+</style>
+
+<script>
+	function debounce(func: (...args: any[]) => any, timeout: number) {
+		let timer = null;
+		return (...args: any[]) => {
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				func.apply(this, args);
+			}, timeout);
+		};
+	}
+
+	const containers = document.querySelectorAll("#cards-section > .group");
+	for (const container of containers as NodeListOf<HTMLElement>) {
+		const card = container.querySelector(".card") as HTMLElement;
+
+		function onMouseMove(event: MouseEvent) {
+			const bounds = container.getBoundingClientRect();
+			const in_bounds_x = event.clientX - bounds.left;
+			const in_bounds_y = event.clientY - bounds.top;
+			const normalized_x = in_bounds_x / bounds.width - 0.5;
+			const normalized_y = in_bounds_y / bounds.height - 0.5;
+
+			const length = Math.min(Math.hypot(normalized_x, normalized_y), 0.3);
+			const angle = Math.atan2(normalized_y, normalized_x);
+
+			const factor = 15;
+			const rotate_x = length * Math.sin(angle) * -factor;
+			const rotate_y = length * Math.cos(angle) * factor;
+
+			card.style.transform = `scale(1.05) rotateY(${rotate_y}deg) rotateX(${rotate_x}deg)`;
+		}
+
+		container.addEventListener("mousemove", onMouseMove);
+		container.addEventListener(
+			"mouseleave",
+			debounce(() => (card.style.transform = "scale(1.0)"), 100)
+		);
+	}
+</script>

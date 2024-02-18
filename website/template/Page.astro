@@ -1,5 +1,5 @@
 ---
-const { locale, title } = Astro.props;
+const { locale, title, class: class_ext } = Astro.props;
 ---
 
 <html lang={locale}>
@@ -10,7 +10,7 @@ const { locale, title } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body class="flex flex-col">
+	<body class={class_ext}>
 		<slot />
 	</body>
 </html>

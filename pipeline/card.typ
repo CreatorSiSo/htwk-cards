@@ -20,19 +20,21 @@
     height: 50%,
     {
       let stroke-width = 0.5mm
-      let stroke-colors = (
-        (rgb("#f1e3cf"), 0%),
-        (rgb("#a27b45"), 30%),
-        (rgb("#a27b45"), 50%),
-        (rgb("#f1e3cf"), 100%),
-      )
+      // let stroke-colors = (
+      //   (rgb("#f1e3cf"), 0%),
+      //   (rgb("#a27b45"), 30%),
+      //   (rgb("#a27b45"), 50%),
+      //   (rgb("#f1e3cf"), 100%),
+      // )
       let bg-colors = (
         (bg-primary.darken(20%), 0%),
         (black, 100%),
       )
       polygon(
-        stroke: (thickness: stroke-width, paint: gradient.conic(..stroke-colors)),
+        stroke: (thickness: stroke-width, paint: text-primary),
+        // stroke: (thickness: stroke-width, paint: gradient.conic(..stroke-colors)),
         fill: gradient.radial(/* angle: 90deg, */center: (50%, 0%), radius: 200%, ..bg-colors),
+        // fill: black,
         (stroke-width/4, stroke-width/4),
         (100% - stroke-width/4, 0% + stroke-width/4),
         (100% - stroke-width/4, 90%),
