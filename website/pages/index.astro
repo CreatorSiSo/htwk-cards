@@ -8,36 +8,40 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 );
 ---
 
-<Page
-	lang="en"
-	title="HTWK Cards"
-	class="bg-zinc-900 text-white flex flex-col items-center gap-10"
->
+<Page lang="en" title="HTWK Cards" class="bg-zinc-900 text-white flex flex-col">
 	<nav
 		class="flex p-4 w-full bg-zinc-800 text-[#ede0ce] border-b-2 border-current"
 	>
 		<h1 class="text-xl font-semibold">HTWK Cards</h1>
 	</nav>
 
-	<section
-		id="cards-section"
-		class="flex flex-wrap justify-center gap-10 px-10 max-w-7xl"
-	>
-		{
-			Object.values(images).map((image) => (
-				<div class="group">
-					<Image
-						width={600}
-						height={900}
-						src={image()}
-						alt=""
-						format="webp"
-						class="card min-w-80 max-w-80 shadow-lg group-hover:shadow-xl shadow-black/20 group-hover:shadow-black/45"
-					/>
-				</div>
-			))
-		}
-	</section>
+	<main class="relative flex flex-col items-center gap-10">
+		<section
+			id="cards-section"
+			class="relative flex flex-wrap justify-center gap-10 px-10 max-w-7xl mt-10"
+		>
+			{
+				Object.values(images).map((image) => (
+					<div class="group">
+						<Image
+							width={600}
+							height={900}
+							src={image()}
+							alt=""
+							format="webp"
+							class="card min-w-80 max-w-80 shadow-lg group-hover:shadow-xl shadow-black/20 group-hover:shadow-black/45"
+						/>
+					</div>
+				))
+			}
+		</section>
+
+		<div
+			id="backdrop"
+			class="absolute inset-0 transition backdrop-blur-sm backdrop-brightness-75 backdrop-saturate-50 opacity-0 pointer-events-none"
+		>
+		</div>
+	</main>
 </Page>
 
 <style>
@@ -48,7 +52,7 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 	#cards-section > .group,
 	#cards-section > .group > .card {
 		transition-property: transform color;
-		transition-duration: 0.6s;
+		transition-duration: 0.5s;
 		transition-timing-function: ease-out;
 	}
 </style>
@@ -59,22 +63,60 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 
 	const containers = document.querySelectorAll("#cards-section > .group");
 	const cards = Array.from(containers).map((container: HTMLElement, index) => {
-		const [selected, set_selected] = createSignal(false);
 		const [rotation, set_rotation] = createSignal({ x: 0.0, y: 0.0 });
 		const [scale, set_scale] = createSignal(1.0);
 		return {
 			index,
 			container,
 			image: container.querySelector(".card") as HTMLElement,
-			selected,
-			set_selected,
 			rotation,
 			set_rotation,
 			scale,
 			set_scale,
 		};
 	});
-	cards.forEach((card, index) => {
+
+	const backdrop = document.querySelector("#backdrop") as HTMLElement;
+	const [selection, set_selection] = createSignal({
+		selected: false,
+		index: 0,
+	});
+
+	createEffect<number>((prev_index) => {
+		const container = cards[prev_index].container;
+		container.style.transform = `translate(0px, 0px)`;
+		container.style.zIndex = "0";
+
+		if (selection().selected) {
+			const container = cards[selection().index].container;
+			const rect = container.getClientRects()[0];
+			const x =
+				window.screenX - rect.x - rect.width / 2 + window.innerWidth / 2;
+			const y =
+				window.screenY - rect.y - rect.height / 2 + window.innerHeight / 2;
+			container.style.transform = `translate(${x}px, ${y}px)`;
+			container.style.zIndex = "100";
+
+			document.body.style.overflow = "hidden";
+			backdrop.classList.remove("opacity-0");
+			backdrop.classList.remove("pointer-events-none");
+		} else {
+			document.body.style.overflow = "visible";
+			backdrop.classList.add("opacity-0");
+			backdrop.classList.add("pointer-events-none");
+		}
+
+		return selection().index;
+	}, 0);
+
+	backdrop.addEventListener("mousedown", () =>
+		set_selection(({ index }) => ({
+			selected: false,
+			index,
+		}))
+	);
+
+	for (const card of cards) {
 		card.container.addEventListener("mouseenter", () => card.set_scale(1.05));
 		card.container.addEventListener(
 			"mouseleave",
@@ -107,9 +149,9 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 		card.container.addEventListener(
 			"mousedown",
 			throttle(() => {
-				cards.forEach((card, other_index) =>
-					card.set_selected(index == other_index && !card.selected())
-				);
+				if (!selection().selected) {
+					set_selection({ selected: true, index: card.index });
+				}
 			}, 200)
 		);
 
@@ -118,23 +160,5 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 				`rotateX(${card.rotation().x}deg)  rotateY(${card.rotation().y}deg)` +
 				` scale(${card.scale()})`;
 		});
-		createEffect(() => {
-			let x = 0.0;
-			let y = 0.0;
-			if (card.selected()) {
-				const rect = card.container.getClientRects()[0];
-				x =
-					window.screenX -
-					rect.x -
-					rect.width / 2 +
-					window.screen.availWidth / 2;
-				y =
-					window.screenY -
-					rect.y -
-					rect.height / 2 +
-					window.screen.availHeight / 2;
-			}
-			card.container.style.transform = `translate(${x}px, ${y}px)`;
-		});
-	});
+	}
 </script>
