@@ -54,119 +54,87 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 </style>
 
 <script>
-	function debounce(func: (...args: any[]) => any, timeout: number) {
-		let timer = null;
-		return (...args: any[]) => {
-			clearTimeout(timer);
-			timer = setTimeout(() => {
-				func.apply(null, args);
-			}, timeout);
-		};
-	}
+	import { debounce, throttle } from "../common.ts";
+	import { createEffect, createSignal } from "solid-js";
 
-	function throttle(func: (...args: any[]) => any, timeout: number) {
-		let waiting = false;
-		return (...args: any[]) => {
-			if (!waiting) {
-				func.apply(null, args);
-				setTimeout(() => (waiting = false), timeout);
-				waiting = true;
-			}
-		};
-	}
-
-	const cards = Array.from(
-		document.querySelectorAll("#cards-section > .group")
-	).map((container: HTMLElement, index) => {
+	const containers = document.querySelectorAll("#cards-section > .group");
+	const cards = Array.from(containers).map((container: HTMLElement, index) => {
+		const [selected, set_selected] = createSignal(false);
+		const [rotation, set_rotation] = createSignal({ x: 0.0, y: 0.0 });
+		const [scale, set_scale] = createSignal(1.0);
 		return {
 			index,
 			container,
 			image: container.querySelector(".card") as HTMLElement,
-			selected: false,
-			transform: {
-				translation_x: 0.0,
-				translation_y: 0.0,
-				rotation_y: 0.0,
-				rotation_x: 0.0,
-				scale: 1.0,
-			},
+			selected,
+			set_selected,
+			rotation,
+			set_rotation,
+			scale,
+			set_scale,
 		};
 	});
-	type Card = (typeof cards)[0];
-
-	function applyTransform(card: Card) {
-		card.container.style.transform = `translate(${card.transform.translation_x}px, ${card.transform.translation_y}px)`;
-		card.image.style.transform =
-			`rotateX(${card.transform.rotation_x}deg)  rotateY(${card.transform.rotation_y}deg)` +
-			` scale(${card.transform.scale})`;
-	}
-
-	for (const card of cards) {
-		function onMouseMove(event: MouseEvent) {
-			const bounds = card.container.getBoundingClientRect();
-			const in_bounds_x = event.clientX - bounds.left;
-			const in_bounds_y = event.clientY - bounds.top;
-			const normalized_x = in_bounds_x / bounds.width - 0.5;
-			const normalized_y = in_bounds_y / bounds.height - 0.5;
-
-			const length = Math.min(Math.hypot(normalized_x, normalized_y), 0.3);
-			const angle = Math.atan2(normalized_y, normalized_x);
-
-			const factor = 15;
-			card.transform.rotation_x = length * Math.sin(angle) * -factor;
-			card.transform.rotation_y = length * Math.cos(angle) * factor;
-			card.transform.scale = 1.05;
-
-			applyTransform(card);
-		}
-
-		card.container.addEventListener("mousemove", throttle(onMouseMove, 50));
+	cards.forEach((card, index) => {
+		card.container.addEventListener("mouseenter", () => card.set_scale(1.05));
 		card.container.addEventListener(
 			"mouseleave",
 			debounce(() => {
-				card.transform.rotation_x = 0.0;
-				card.transform.rotation_y = 0.0;
-				card.transform.scale = 1.0;
-				applyTransform(card);
+				card.set_rotation({ x: 0.0, y: 0.0 });
+				card.set_scale(1.0);
 			}, 100)
+		);
+
+		card.container.addEventListener(
+			"mousemove",
+			throttle((event: MouseEvent) => {
+				const bounds = card.container.getBoundingClientRect();
+				const in_bounds_x = event.clientX - bounds.left;
+				const in_bounds_y = event.clientY - bounds.top;
+				const normalized_x = in_bounds_x / bounds.width - 0.5;
+				const normalized_y = in_bounds_y / bounds.height - 0.5;
+
+				const length = Math.min(Math.hypot(normalized_x, normalized_y), 0.3);
+				const angle = Math.atan2(normalized_y, normalized_x);
+
+				const factor = 15;
+				card.set_rotation({
+					x: length * Math.sin(angle) * -factor,
+					y: length * Math.cos(angle) * factor,
+				});
+			}, 50)
 		);
 
 		card.container.addEventListener(
 			"mousedown",
 			throttle(() => {
-				const rect = card.container.getClientRects()[0];
-
-				function deselectCard(card: Card) {
-					console.log(card);
-					card.selected = false;
-					card.transform.translation_x = 0;
-					card.transform.translation_y = 0;
-					applyTransform(card);
-				}
-
-				if (!card.selected) {
-					const selected_card = cards.find((card) => card.selected);
-					if (selected_card) {
-						deselectCard(selected_card);
-					}
-
-					card.selected = true;
-					card.transform.translation_x =
-						window.screenX -
-						rect.x -
-						rect.width / 2 +
-						window.screen.availWidth / 2;
-					card.transform.translation_y =
-						window.screenY -
-						rect.y -
-						rect.height / 2 +
-						window.screen.availHeight / 2;
-					applyTransform(card);
-					return;
-				}
-
-				deselectCard(card);
+				cards.forEach((card, other_index) =>
+					card.set_selected(index == other_index && !card.selected())
+				);
 			}, 200)
 		);
-	}
+
+		createEffect(() => {
+			card.image.style.transform =
+				`rotateX(${card.rotation().x}deg)  rotateY(${card.rotation().y}deg)` +
+				` scale(${card.scale()})`;
+		});
+		createEffect(() => {
+			let x = 0.0;
+			let y = 0.0;
+			if (card.selected()) {
+				const rect = card.container.getClientRects()[0];
+				x =
+					window.screenX -
+					rect.x -
+					rect.width / 2 +
+					window.screen.availWidth / 2;
+				y =
+					window.screenY -
+					rect.y -
+					rect.height / 2 +
+					window.screen.availHeight / 2;
+			}
+			card.container.style.transform = `translate(${x}px, ${y}px)`;
+		});
+	});
 </script>
