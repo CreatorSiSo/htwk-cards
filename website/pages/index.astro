@@ -27,13 +27,13 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 			id="backdrop"
 			class="fixed w-full h-full transition ease-out opacity-0 backdrop-blur-sm backdrop-brightness-75 backdrop-saturate-50 flex justify-between items-center"
 		>
-			<button class="self-stretch p-6 bg-red-600 collapse sm:visible">
+			<button class="self-stretch w-20 md:w-32 bg-red-600 collapse sm:visible">
 				Prev
 			</button>
 
 			<Card image={Object.values(images)[0]} class="" />
 
-			<button class="self-stretch p-6 bg-red-600 collapse sm:visible">
+			<button class="self-stretch w-20 md:w-32 bg-red-600 collapse sm:visible">
 				Next
 			</button>
 		</div>
@@ -63,6 +63,10 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 	const backdrop_card = backdrop.children[1] as HTMLElement;
 	const backdrop_image = backdrop_card.firstElementChild as HTMLImageElement;
 
+	backdrop_card.addEventListener("mousedown", (event) =>
+		event.stopImmediatePropagation()
+	);
+
 	for (const { index, container } of cards) {
 		const [selected, set_selected] = selection[index];
 
@@ -71,6 +75,7 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 				document.body.style.overflow = "visible";
 				backdrop.classList.add("opacity-0");
 				backdrop.classList.add("pointer-events-none");
+
 				container.style.zIndex = "0";
 				backdrop_card.style.transform = "scale(1.0)";
 				backdrop_card.style.transition = "";
@@ -103,4 +108,25 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
 			}, 200)
 		);
 	}
+
+	const prev_button = backdrop.firstElementChild as HTMLButtonElement;
+	const next_button = backdrop.lastElementChild as HTMLButtonElement;
+
+	prev_button.addEventListener("mousedown", (event) => {
+		event.stopImmediatePropagation();
+		const index = selection.findIndex(([selected, _]) => selected());
+		let new_index = index - 1;
+		if (new_index < 0) {
+			new_index = selection.length - 1;
+		}
+		selection[index][1](false);
+		selection[new_index][1](true);
+	});
+	next_button.addEventListener("mousedown", (event) => {
+		event.stopImmediatePropagation();
+		const index = selection.findIndex(([selected, _]) => selected());
+		const new_index = (index + 1) % selection.length;
+		selection[index][1](false);
+		selection[new_index][1](true);
+	});
 </script>
